@@ -1,0 +1,5 @@
+[{
+  "browserName": "chrome",
+  "targetUrl" : "https://shop.by/",
+  "driverPath" : "./src/test/resources/chromedriver.exe"
+}]
