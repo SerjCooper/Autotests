@@ -1,5 +1,6 @@
 package Autotests;
 
+import Autotests.pages.catalogPage;
 import Autotests.pages.loginPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -28,7 +29,7 @@ public class FirstTest {
             driver = new ChromeDriver();
         }
         driver.manage().window().maximize(); //передаю веб-драйверу набор методов, для того чтобы ход теста отображался в полностью открытом окне:
-        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS); // неявное ожидание Implicit Wait, которое задается вначале теста и будет работать при каждом вызове метода поиска элемента:
+        driver.manage().timeouts().implicitlyWait(15, TimeUnit.SECONDS); // неявное ожидание Implicit Wait, которое задается вначале теста и будет работать при каждом вызове метода поиска элемента:
         driver.get(configs.targetUrl);
     }
     @Test(priority = 1)
@@ -43,22 +44,15 @@ public class FirstTest {
 
     @Test(priority = 2)
     public void openSummaryCatalog() {
-        WebElement summaryCatalogButton = driver.findElement(By.xpath("/html/body/div[2]/div/div[2]/div[1]/a"));
-        summaryCatalogButton.click();
-        Assert.assertEquals("Весь каталог", driver.findElement(By.className("Page__TitleActivePage")).getText());
+        catalogPage catalogPage = new catalogPage(driver);
+        catalogPage.catalogButtonClick();
+        Assert.assertEquals("Весь каталог", catalogPage.getActivePageTitle());
     }
 
     @Test(priority = 3)
     public void openSameCatalog() {
-       /* List<WebElement> catalogButtons = driver.findElements(By.className("Header__CatalogAllLink")); // есть 2 кнопки каталога, одна из которых видима (в зависимости от размера экрана)
-        WebElement catalogButton = catalogButtons.stream()
-                .filter(WebElement::isDisplayed) //оставляем только видимые (должен быть 1)
-                .findAny() // берем любой видимый
-                .orElseThrow(() -> new AssertionError("Не найдена кнопка открытия всех каталогов")); //если не нашли кнопку - ругаемся
-        catalogButton.click();*/
-
         List<WebElement> elements = driver.findElements(By.cssSelector(".Page__BlockElementsPageCatalog > .Page__ElementPageCatalog > div > a"));
-    //    Assert.assertTrue("Не найден ни один каталог", !elements.isEmpty());
+        Assert.assertTrue(!elements.isEmpty(), "Не найден ни один каталог");
 
         int index = new Random().nextInt(elements.size());
         WebElement element = elements.get(index);
