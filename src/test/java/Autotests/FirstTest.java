@@ -3,6 +3,7 @@ package Autotests;
 import Autotests.pages.CatalogPage;
 import Autotests.pages.HomePage;
 import Autotests.pages.LoginPage;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -16,23 +17,28 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
+import org.openqa.selenium.opera.OperaDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.FluentWait;
+import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 import org.testng.annotations.*;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class FirstTest {
 
     private static WebDriver driver;
 
-    private String login = "447659060";
-    private String password = "testa1qa";
+    private static String login = "447659060";
+    private static String password = "testa1qa";
 
     private LoginPage loginPage;
     private CatalogPage catalogPage;
@@ -43,7 +49,7 @@ public class FirstTest {
         InitConfig configs = new InitConfig();
         System.setProperty("webdriver." + configs.browserName +".driver", configs.driverPath);
         if ("Opera".equalsIgnoreCase(configs.browserName))
-            driver = new ChromeDriver();
+            driver = new OperaDriver();
         else if("ie".equalsIgnoreCase(configs.browserName))
             driver = new InternetExplorerDriver();
         else if("Firefox".equalsIgnoreCase(configs.browserName))
@@ -52,21 +58,27 @@ public class FirstTest {
             driver = new ChromeDriver();
 
         driver.manage().window().maximize(); //передаю веб-драйверу набор методов, для того чтобы ход теста отображался в полностью открытом окне:
-        driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS); // неявное ожидание Implicit Wait, которое задается вначале теста и будет работать при каждом вызове метода поиска элемента:
+        driver.manage().timeouts().implicitlyWait(10, SECONDS); // неявное ожидание Implicit Wait, которое задается вначале теста и будет работать при каждом вызове метода поиска элемента:
         driver.get(configs.targetUrl);
     }
 
-    @Test(priority = 1)
+    @AfterGroups(groups = "catalog")
+    @BeforeGroups(groups = "main_feedback")
+    public void openMainPage() {
+        openHomePage();
+    }
+
+    @Test
     public void userLogin() {
         loginPage = new LoginPage(driver);
-        (new WebDriverWait(driver, 10))
+        (new WebDriverWait(driver, 15))
                 .until(ExpectedConditions.textToBePresentInElement(loginPage.getAuthWindow(), "Войти")); //реализация ожидания explicit
         loginPage.loginTo(login, password);
 
         Assert.assertEquals("userShop.by_20", loginPage.authUser());
     }
 
-    @Test(priority = 2)
+    @Test(groups = "catalog")
     public void openSameCatalog() {
         catalogPage = new CatalogPage(driver);
         catalogPage.catalogButtonClick();
@@ -76,21 +88,27 @@ public class FirstTest {
         Assert.assertTrue(!elements.isEmpty(), "Не найден ни один каталог");
 
         int index = new Random().nextInt(elements.size());
-        WebElement element = elements.get(index);
+
+        Wait<WebDriver> wait = new FluentWait<>(driver)
+                .withTimeout(10, SECONDS)
+                .pollingEvery(2, SECONDS)
+                .ignoring(NoSuchElementException.class);
+        WebElement element = wait.until(driver -> elements.get(index));
+
         String elementText = element.getText();
         element.click();
+
         String activePageTitle = catalogPage.getActivePageTitle();
         Assert.assertEquals(elementText, activePageTitle);
     }
 
-    @Test(priority = 3)
-    public void openHomePage() {
-        homePage = new HomePage(driver);
-        homePage.headerLogoClick();
+    @Test()
+    public void openHomePageTest() {
+        openHomePage();
         Assert.assertEquals(homePage.getBaseUri(), driver.getCurrentUrl());
     }
 
-    @Test(priority = 4)
+    @Test(groups = "main_feedback")
     public void testFeedback() throws IOException {
         String page = driver.getPageSource();
         String regexp = "<a class=\"ModelReviewsHome__NameModel\" href.*?>(.*?)</a>";
@@ -104,7 +122,7 @@ public class FirstTest {
         printToFile(reviews);
     }
 
-    @Test(priority = 5)
+    @Test()
     public void testLogout() {
         loginPage.logout();
         Assert.assertFalse(loginPage.authUser().isEmpty());
@@ -124,5 +142,10 @@ public class FirstTest {
     @AfterClass
     public static void tearDown() {
         driver.quit();
+    }
+
+    public void openHomePage() {
+        homePage = new HomePage(driver);
+        homePage.headerLogoClick();
     }
 }
