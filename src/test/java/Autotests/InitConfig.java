@@ -16,8 +16,6 @@ public class InitConfig {
     public String targetUrl;
     public String driverPath;
 
-   // public HashMap<String, Object> params;
-
     private static String CONFIG_PATH = "./src/test/resources/config.json";
 
     public InitConfig() { //метод для чтения json

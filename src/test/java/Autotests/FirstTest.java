@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.opera.OperaDriver;
+import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Wait;
@@ -62,15 +63,18 @@ public class FirstTest {
         driver.get(configs.targetUrl);
     }
 
-    @AfterGroups(groups = "catalog")
-    @BeforeGroups(groups = "main_feedback")
-    public void openMainPage() {
-        openHomePage();
+    @Test(priority = 1)
+    public void userLogin() {
+        loginPage = new LoginPage(driver);
+        (new WebDriverWait(driver, 15))
+                .until(ExpectedConditions.textToBePresentInElement(loginPage.getAuthWindow(), "Войти")); //реализация ожидания explicit
+        loginPage.loginTo(login, password);
+        Assert.assertEquals("userShop.by_20", loginPage.authUser());
     }
 
-    @Test(groups = "catalog")
+    @Test(priority = 2)
     public void openSameCatalog() {
-        catalogPage = new CatalogPage(driver);
+        catalogPage = PageFactory.initElements(driver, CatalogPage.class);
         catalogPage.catalogButtonClick();
         Assert.assertEquals("Весь каталог", catalogPage.getActivePageTitle());
 
@@ -92,13 +96,13 @@ public class FirstTest {
         Assert.assertEquals(elementText, activePageTitle);
     }
 
-    @Test()
+    @Test(priority = 3)
     public void openHomePageTest() {
         openHomePage();
         Assert.assertEquals(homePage.getBaseUri(), driver.getCurrentUrl());
     }
 
-    @Test(groups = "main_feedback")
+    @Test(priority = 4)
     public void testFeedback() throws IOException {
         String page = driver.getPageSource();
         String regexp = "<a class=\"ModelReviewsHome__NameModel\" href.*?>(.*?)</a>";
@@ -112,16 +116,15 @@ public class FirstTest {
         printToFile(reviews);
     }
 
-    @Test()
-    public void testAuth() {
-        loginPage = new LoginPage(driver);
-        (new WebDriverWait(driver, 15))
-                .until(ExpectedConditions.textToBePresentInElement(loginPage.getAuthWindow(), "Войти")); //реализация ожидания explicit
-        loginPage.loginTo(login, password);
-
-        Assert.assertEquals("userShop.by_20", loginPage.authUser());
+    @Test(priority = 5)
+    public void userLogout() {
         loginPage.logout();
         Assert.assertFalse(loginPage.authUser().isEmpty());
+    }
+
+    @AfterClass
+    public static void tearDown() {
+        driver.quit();
     }
 
     private void printToFile(List<String> reviews) throws IOException {
@@ -133,11 +136,6 @@ public class FirstTest {
                 writer.append(f).append(";");
             }
         }
-    }
-
-    @AfterClass
-    public static void tearDown() {
-        driver.quit();
     }
 
     public void openHomePage() {
