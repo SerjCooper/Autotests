@@ -64,7 +64,7 @@ public class FirstTest {
     }
 
     @Test(priority = 1)
-    public void userLogin() {
+    public void userLoginTest() {
         loginPage = new LoginPage(driver);
         (new WebDriverWait(driver, 15))
                 .until(ExpectedConditions.textToBePresentInElement(loginPage.getAuthWindow(), "Войти")); //реализация ожидания explicit
@@ -73,7 +73,7 @@ public class FirstTest {
     }
 
     @Test(priority = 2)
-    public void openSameCatalog() {
+    public void openSameCatalogTest() {
         catalogPage = PageFactory.initElements(driver, CatalogPage.class);
         catalogPage.catalogButtonClick();
         Assert.assertEquals("Весь каталог", catalogPage.getActivePageTitle());
@@ -103,7 +103,7 @@ public class FirstTest {
     }
 
     @Test(priority = 4)
-    public void testFeedback() throws IOException {
+    public void FeedbackTest() throws IOException {
         String page = driver.getPageSource();
         String regexp = "<a class=\"ModelReviewsHome__NameModel\" href.*?>(.*?)</a>";
         Pattern pattern = Pattern.compile(regexp);
@@ -117,7 +117,7 @@ public class FirstTest {
     }
 
     @Test(priority = 5)
-    public void userLogout() {
+    public void userLogoutTest() {
         loginPage.logout();
         Assert.assertFalse(loginPage.authUser().isEmpty());
     }
