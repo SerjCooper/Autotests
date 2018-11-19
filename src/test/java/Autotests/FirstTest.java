@@ -68,16 +68,6 @@ public class FirstTest {
         openHomePage();
     }
 
-    @Test
-    public void userLogin() {
-        loginPage = new LoginPage(driver);
-        (new WebDriverWait(driver, 15))
-                .until(ExpectedConditions.textToBePresentInElement(loginPage.getAuthWindow(), "Войти")); //реализация ожидания explicit
-        loginPage.loginTo(login, password);
-
-        Assert.assertEquals("userShop.by_20", loginPage.authUser());
-    }
-
     @Test(groups = "catalog")
     public void openSameCatalog() {
         catalogPage = new CatalogPage(driver);
@@ -123,7 +113,13 @@ public class FirstTest {
     }
 
     @Test()
-    public void testLogout() {
+    public void testAuth() {
+        loginPage = new LoginPage(driver);
+        (new WebDriverWait(driver, 15))
+                .until(ExpectedConditions.textToBePresentInElement(loginPage.getAuthWindow(), "Войти")); //реализация ожидания explicit
+        loginPage.loginTo(login, password);
+
+        Assert.assertEquals("userShop.by_20", loginPage.authUser());
         loginPage.logout();
         Assert.assertFalse(loginPage.authUser().isEmpty());
     }
