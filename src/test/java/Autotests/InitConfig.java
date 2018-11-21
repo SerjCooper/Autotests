@@ -12,9 +12,9 @@ import java.util.HashMap;
 
 public class InitConfig {
 
-    public String browserName;
-    public String targetUrl;
-    public String driverPath;
+    public static String browserName;
+    public static String targetUrl;
+    public static String driverPath;
 
     private static String CONFIG_PATH = "./src/test/resources/config.json";
 
@@ -32,7 +32,7 @@ public class InitConfig {
                 JsonObject root = (JsonObject) o;
                 browserName = root.get("browserName").getAsString();
                 targetUrl = root.get("targetUrl").getAsString();
-                driverPath = root.get("driverPath").getAsString();
+                driverPath = root.get("driverPath").getAsString() + browserName + "driver.exe";
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
